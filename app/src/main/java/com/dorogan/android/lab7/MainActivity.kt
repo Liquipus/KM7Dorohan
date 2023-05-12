@@ -1,10 +1,10 @@
 package com.dorogan.android.lab7
-
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import kotlinx.coroutines.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -20,30 +20,40 @@ class MainActivity : AppCompatActivity() {
             CoroutineScope(
                 SupervisorJob()
             ).launch {
-                withContext(Dispatchers.Default) {
-                    Retrofit
-                        .Builder()
-                        .baseUrl("https://api.coinpaprika.com/v1/coins/")
-                        .addConverterFactory(
-                            GsonConverterFactory.create()
-                        )
-                        .build()
-                        .create(
-                            ApiMethods::class.java
-                        )
-                        .getCurrencyDescription(url)
-                        .let { response ->
-                            runOnUiThread {
-                                findViewById<TextView>(R.id.nameView).text = response.name
-                                findViewById<TextView>(R.id.symbolView).text = response.symbol
-                                findViewById<TextView>(R.id.descriptionView).text = response.description
+                try {
+                    withContext(Dispatchers.Default) {
+                        Retrofit
+                            .Builder()
+                            .baseUrl("https://api.coinpaprika.com/v1/coins/")
+                            .addConverterFactory(
+                                GsonConverterFactory.create()
+                            )
+                            .build()
+                            .create(
+                                ApiMethods::class.java
+                            )
+                            .getCurrencyDescription(url)
+                            .let { response ->
+                                runOnUiThread {
+                                    findViewById<TextView>(R.id.nameView).text = response.name
+                                    findViewById<TextView>(R.id.symbolView).text = response.symbol
+                                    findViewById<TextView>(R.id.descriptionView).text =
+                                        response.description
+                                }
                             }
-                        }
+                    }
+                } catch (notFound: java.lang.Exception) {
+                    notFound.printStackTrace()
+                    withContext(Dispatchers.Main){
+                        Toast.makeText(this@MainActivity, "Неправильний запит", Toast.LENGTH_SHORT).show()
+                    }
+
                 }
             }
         }
     }
 }
+
 
 interface ApiMethods {
     @GET
